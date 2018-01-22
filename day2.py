@@ -1,5 +1,6 @@
 import csv
 from enum import Enum
+from sys import argv
 
 class ChecksumStrategy(Enum):
     MinMaxDiff = 1,
@@ -20,8 +21,8 @@ def getChecksumInput(row, strategy):
     elif strategy == ChecksumStrategy.EvenDivide:
         return getEvenDivide(row)
 
-def getChecksum(strategy):
-    with open("input.txt", "r") as csvfile:
+def getChecksum(filename, strategy):
+    with open(filename, "r") as csvfile:
         ss = csv.reader(csvfile, delimiter="\t")
         checksumInputs = []
 
@@ -32,5 +33,8 @@ def getChecksum(strategy):
 
         return sum(checksumInputs)
 
-print(getChecksum(ChecksumStrategy.MinMaxDiff))
-print(getChecksum(ChecksumStrategy.EvenDivide))
+if len(argv) > 1:
+    print(getChecksum(argv[1], ChecksumStrategy.MinMaxDiff))
+    print(getChecksum(argv[1], ChecksumStrategy.EvenDivide))
+else:
+    print("Input filename is required.")
