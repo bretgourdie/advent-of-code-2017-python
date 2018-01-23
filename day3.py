@@ -25,7 +25,11 @@ def getNextRowAndColumn(row, column, direction):
 
 def getDirectionValue(row, column, direction, grid):
     newRow, newColumn = getNextRowAndColumn(row, column, direction)
-    return grid[newRow][newColumn]
+    if newRow < len(grid) and newColumn < len(grid[newRow]):
+        return grid[newRow][newColumn]
+    else:
+        return maxsize
+
 
 def generateGrid(toNum):
     dimension = getGridBound(toNum)
@@ -55,8 +59,8 @@ def generateGrid(toNum):
     return grid
 
 def findStart(num, grid):
-    for row in range(0, len(grid) - 1):
-        for col in range(0, len(grid)):
+    for row in range(len(grid)):
+        for col in range(len(grid[row])):
             if grid[row][col] == num:
                 return row, col
 
