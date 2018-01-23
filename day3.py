@@ -87,8 +87,9 @@ def getSteps(num):
 
     return steps
 
+tests = [1, 12, 23, 1024, 289326]
+for test in tests:
+    print(
+        "Number of steps to {} is {}".format(test, getSteps(test))
+    )
 
-print(getSteps(1))
-print(getSteps(12))
-print(getSteps(23))
-print(getSteps(1024))
