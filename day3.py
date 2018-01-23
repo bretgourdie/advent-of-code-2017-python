@@ -56,7 +56,7 @@ def generateGrid(toNum):
 
 def findStart(num, grid):
     for row in range(0, len(grid) - 1):
-        for col in range(0, len(grid) - 1):
+        for col in range(0, len(grid)):
             if grid[row][col] == num:
                 return row, col
 
@@ -76,10 +76,7 @@ def getSteps(num):
             Direction.Down: getDirectionValue(row, column, Direction.Down, grid)
         }
 
-        print("Possible Moves:\n{}".format(possibleMoves))
-
         direction = min(possibleMoves, key=possibleMoves.get)
-        print("Selected {}".format(direction))
         row, column = getNextRowAndColumn(row, column, direction)
 
         steps += 1
