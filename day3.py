@@ -1,7 +1,8 @@
 from math import sqrt, floor
 from sys import maxsize
+from enum import Enum
 
-class Direction():
+class Direction(Enum):
     Down  = ( 0,  1)
     Left  = (-1,  0)
     Up    = ( 0, -1)
@@ -18,8 +19,8 @@ def getGridBound(toNum):
         return fsToNum + 2
 
 def getNextRowAndColumn(row, column, direction):
-    newRow = row + direction[1]
-    newColumn = column + direction[0]
+    newRow = row + direction.value[1]
+    newColumn = column + direction.value[0]
     return newRow, newColumn
 
 def getDirectionValue(row, column, direction, grid):
