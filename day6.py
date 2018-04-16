@@ -39,3 +39,17 @@ while memoryBank not in memoryBankConfigurations:
     numberOfRedistributions += 1
 
 print("Took {} redistributions to find a loop".format(numberOfRedistributions))
+
+sizeOfLoop = 0
+loopBeginning = memoryBank[:]
+print("Loop beginning: {}".format(loopBeginning))
+while True:
+    redistributeBlocks(memoryBank)
+    sizeOfLoop += 1
+
+    if memoryBank == loopBeginning:
+        print("Loop detected; memoryBank: {}".format(memoryBank))
+        break
+
+
+print("Size of loop is {}".format(sizeOfLoop))
