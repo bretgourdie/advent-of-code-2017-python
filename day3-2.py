@@ -30,15 +30,43 @@ def getDirectionValue(row, column, direction, grid):
     else:
         return maxsize
 
+def getNextNumberForPart2(newRow, newColumn, grid, dimension):
+    if newRow >= 0 and newColumn >= 0 and newRow < dimension and newColumn < dimension and grid[newRow][newColumn] != None and grid[newRow][newColumn] != 0:
+        return grid[newRow][newColumn]
+    else:
+        return 0
 
-def generateGrid(toNum):
+def getNextNumber(currentNumber, row, column, grid, dimension, isPart1):
+    if isPart1:
+        return currentNumber + 1
+    else:
+        ul = getNextNumberForPart2(row-1, column-1, grid, dimension)
+        u = getNextNumberForPart2(row-1, column, grid, dimension)
+        ur = getNextNumberForPart2(row-1, column+1, grid, dimension)
+
+        l = getNextNumberForPart2(row, column-1, grid, dimension)
+        r = getNextNumberForPart2(row, column+1, grid, dimension)
+
+        dl = getNextNumberForPart2(row+1, column-1, grid, dimension)
+        d = getNextNumberForPart2(row+1, column, grid, dimension)
+        dr = getNextNumberForPart2(row+1, column+1, grid, dimension)
+
+        nextNumber = ul + u + ur + l + r + dl + d + dr
+        
+        return nextNumber
+
+
+def generateGrid(toNum, isPart1):
     dimension = getGridBound(toNum)
     grid = [[0 for x in range(dimension)] for y in range(dimension)]
     middle = dimension // 2
     currentNumber = 1
+    previousNumber = 1
+    numberOfCellsPopulated = 0
     direction = Direction.Right
     row, column = middle, middle
     diameter = 0
+    hasStatedNextNumber = False
     nextDirection = {
         Direction.Right: Direction.Up,
         Direction.Up: Direction.Left,
@@ -46,15 +74,27 @@ def generateGrid(toNum):
         Direction.Down: Direction.Right
     }
 
-    while currentNumber <= dimension ** 2:
+    while numberOfCellsPopulated < dimension ** 2:
         if direction in [Direction.Left, Direction.Right]:
             diameter += 1
 
         for ii in range(min(diameter, dimension)):
+            previousNumber = currentNumber
+            if numberOfCellsPopulated > 0:
+                currentNumber = getNextNumber(currentNumber, row, column, grid, dimension, isPart1)
+            else:
+                currentNumber = 1
+
+            if previousNumber <= 289326 and currentNumber > 289326 and not isPart1 and not hasStatedNextNumber:
+                print("After {} is {}".format(previousNumber, currentNumber))
+                hasStatedNextNumber = True
+
             grid[row][column] = currentNumber
-            currentNumber += 1
+
             row, column = getNextRowAndColumn(row, column, direction)
+            numberOfCellsPopulated += 1
         direction = nextDirection[direction]
+
 
     return grid
 
@@ -66,8 +106,8 @@ def findStart(num, grid):
 
     return -1, -1
 
-def getSteps(num):
-    grid = generateGrid(num)
+def getSteps(num, isPart1):
+    grid = generateGrid(num, isPart1)
     row, column = findStart(num, grid)
     steps = 0
     targetNumber = 1
@@ -87,9 +127,12 @@ def getSteps(num):
 
     return steps
 
-tests = [1, 12, 23, 1024, 289326]
+tests = [1, 12, 23, 1024, 289326 * 2]
+parts = [True, False]
 for test in tests:
-    print(
-        "Number of steps to {} is {}".format(test, getSteps(test))
-    )
+    for part in parts:
+        partDescription = "1" if part else "2"
+        print(
+            "Number of steps to {} is {} for part {}".format(test, getSteps(test, part), partDescription)
+        )
 
