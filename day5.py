@@ -1,16 +1,30 @@
-instructions = []
-with open("input.txt", "r") as instructionFile:
-    instructions = [int(i) for i in instructionFile.readlines()]
+def getOffsetIncrement(offset, isPart1):
+    if isPart1:
+        return 1
+    else:
+        if offset >= 3:
+            return -1
+        else:
+            return 1
 
-index = 0
-outerBound = len(instructions)
+def getSteps(isPart1):
+    instructions = []
+    with open("input.txt", "r") as instructionFile:
+        instructions = [int(i) for i in instructionFile.readlines()]
 
-steps = 0
-while index < outerBound and index >= 0:
-    currentInstruction = instructions[index]
-    instructions[index] += 1
+    index = 0
+    outerBound = len(instructions)
 
-    index += currentInstruction
-    steps += 1
+    steps = 0
+    while index < outerBound and index >= 0:
+        currentInstruction = instructions[index]
+        instructions[index] += getOffsetIncrement(currentInstruction, isPart1)
 
-print("It took {} steps to escape the instructions".format(steps))
+        index += currentInstruction
+        steps += 1
+
+    part = "1" if isPart1 else "2"
+    print("It took {} steps to escape the instructions for part {}".format(steps, part))
+
+getSteps(True)
+getSteps(False)
