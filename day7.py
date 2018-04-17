@@ -34,7 +34,8 @@ def getWeight(instruction):
 
 def getChildren(instruction):
     rightSide = getRightSideOfArrow(instruction)
-    rightSideList = rightSide.split(", ")
+    rightSideScrubbed = rightSide.replace(",", "")
+    rightSideList = rightSideScrubbed.split()
     if len(rightSideList) > 0 and len(rightSideList[0]) > 0:
         return rightSideList
     else:
@@ -44,13 +45,23 @@ instructions = []
 with open("input.txt", "r") as instructionFile:
     instructions = instructionFile.readlines()
 
-nodes = {}
+nodeLookup = {}
+nodeNames = []
 for instruction in instructions:
 
     children = getChildren(instruction)
     name = getName(instruction)
     weight = getWeight(instruction)
 
-    print("Name: {}, weight: {}, children: {}".format(name, weight, children))
     node = Node(name, weight, children)
-    nodes[node] = node
+    nodeLookup[node.name] = node
+    nodeNames.append(node.name)
+
+nodesThatAreRoot = nodeNames[:]
+
+for nodeName in nodeNames:
+    node = nodeLookup[nodeName]
+    for child in node.children:
+        nodesThatAreRoot.remove(child)
+
+print("Root node: {}".format(nodesThatAreRoot))
