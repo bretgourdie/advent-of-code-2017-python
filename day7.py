@@ -64,4 +64,5 @@ for nodeName in nodeNames:
     for child in node.children:
         nodesThatAreRoot.remove(child)
 
-print("Root node: {}".format(nodesThatAreRoot))
+rootNode = nodesThatAreRoot[0]
+print("Root node: \"{}\"".format(rootNode))
