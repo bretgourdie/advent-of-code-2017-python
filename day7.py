@@ -41,6 +41,25 @@ def getChildren(instruction):
     else:
         return []
 
+def getWeightOfStack(parent, node, depth):
+    stackWeight = 0
+    for child in node.children:
+        stackWeight += getWeightOfStack(nodeLookup[child], depth+1)
+
+    totalWeight = stackWeight + node.weight
+
+    print(
+        "Node {} at depth {} holds {} (stack weight {}; own weight {})".format(
+            node.name,
+            depth,
+            totalWeight,
+            stackWeight,
+            node.weight
+        )
+    )
+
+    return totalWeight
+
 instructions = []
 with open("input.txt", "r") as instructionFile:
     instructions = instructionFile.readlines()
@@ -66,3 +85,5 @@ for nodeName in nodeNames:
 
 rootNode = nodesThatAreRoot[0]
 print("Root node: \"{}\"".format(rootNode))
+
+getWeightOfStack(nodeLookup[rootNode], 0)
