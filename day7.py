@@ -41,80 +41,40 @@ def getChildren(instruction):
     else:
         return []
 
-def getInconsistentWeight(weightByChild):
-    if len(weightByChild) == 1:
-        return None, None, None
-
-    weightFrequency = {}
-    for child in weightByChild:
-        weight = weightByChild[child]
-
-        if weight not in weightFrequency:
-            weightFrequency[weight] = 0
-        weightFrequency[weight] += 1
-
-    if len(weightFrequency) == 1:
-        return None, None, None
-
-    singleWeight = -1
-    for weight in weightFrequency:
-        frequency = weightFrequency[weight]
-        if frequency == 1:
-            print("SingleWeight: {} (freq: {})".format(weight, frequency))
-            singleWeight = weight
-            break
-
-    multiWeight = -1
-    for weight in weightFrequency:
-        frequency = weightFrequency[weight]
-        if frequency != 1:
-            print("MultiWeight: {} (freq : {})".format(weight, frequency))
-            multiWeight = weight
-            break
-
-    for child in weightByChild:
-        if singleWeight == weightByChild[child]:
-            return child, singleWeight, singleWeight - multiWeight
-
-    # Oh well
-    return None, None, None
+def isInconsistent(frequencyByChildStackWeight):
+    return len(frequencyByChildStackWeight) > 1
 
 def getWeightOfStack(node, depth):
-    stackWeight = 0
-    weightByChild = {}
-    for child in node.children:
-        childStackWeight = getWeightOfStack(nodeLookup[child], depth+1)
-        stackWeight += childStackWeight
-        weightByChild[child] = childStackWeight
+    stackWeightByChildNodes = {}
+    frequencyByChildStackWeight = {}
+    
+    for childName in node.children:
+        childNode = nodeLookup[childName]
+        childStackWeight = getWeightOfStack(childNode, depth+1)
+        stackWeightByChildNodes[childNode] = childStackWeight
 
-    totalWeight = stackWeight + node.weight
+        if childStackWeight not in frequencyByChildStackWeight:
+            frequencyByChildStackWeight[childStackWeight] = 0
+        frequencyByChildStackWeight[childStackWeight] += 1
 
-    print(
-        "Node {} at depth {} holds {} (stack weight {}; own weight {})".format(
-            node.name,
-            depth+1,
-            totalWeight,
-            stackWeight,
-            node.weight
-        )
-    )
+    if isInconsistent(frequencyByChildStackWeight):
+        singleWeight = -1
+        multiWeight = -1
+        for childWeight, freq in frequencyByChildStackWeight.items():
+            if freq == 1:
+                singleWeight = childWeight
+            else:
+                multiWeight = childWeight
 
-    inconsistentChildNode, inconsistentChildNodeWeight, differenceBetweenInconsistentAndConsistent = getInconsistentWeight(weightByChild)
+        for childNode, stackWeight in stackWeightByChildNodes.items():
+            if singleWeight == stackWeight:
+                print("Inconsistent child {}: weight {} should be {}".format(childNode.name, childNode.weight, childNode.weight - (singleWeight - multiWeight)))
 
-    if inconsistentChildNode is not None:
-        actualNode = nodeLookup[inconsistentChildNode]
-        print("Inconsistent Child at depth {}: {} (weight: {}, stackweight: {}), InconsistentWeight - ConsistentWeight = {}".format
-            (
-                depth+1,
-                inconsistentChildNode,
-                actualNode.weight,
-                inconsistentChildNodeWeight,
-                differenceBetweenInconsistentAndConsistent
-            )
-        )
-        pass
+    childrenStackWeight = 0
+    for childNode, childWeight in stackWeightByChildNodes.items():
+        childrenStackWeight += childWeight
 
-    return totalWeight
+    return childrenStackWeight + node.weight
 
 instructions = []
 with open("input.txt", "r") as instructionFile:
