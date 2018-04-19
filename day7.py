@@ -86,4 +86,4 @@ for nodeName in nodeNames:
 rootNode = nodesThatAreRoot[0]
 print("Root node: \"{}\"".format(rootNode))
 
-getWeightOfStack(nodeLookup[rootNode], 0)
+getWeightOfStack(None, nodeLookup[rootNode], 0)

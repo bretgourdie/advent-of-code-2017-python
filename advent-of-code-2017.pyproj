@@ -5,7 +5,7 @@
     <SchemaVersion>2.0</SchemaVersion>
     <ProjectGuid>{75f4f349-90cd-47f8-b47d-742ddc9955b7}</ProjectGuid>
     <ProjectHome />
-    <StartupFile>day1.py</StartupFile>
+    <StartupFile>day7.py</StartupFile>
     <SearchPath />
     <WorkingDirectory>.</WorkingDirectory>
     <OutputPath>.</OutputPath>
