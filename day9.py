@@ -55,6 +55,8 @@ class InGarbage(State):
     def handleChar(self, char):
         if char == endGarbageChar:
             return self.getPreviousState()
+        elif char == negateChar:
+            return SkipNextChar(self)
         else:
             print("No transition with {} (still in garbage)".format(self))
             return self
