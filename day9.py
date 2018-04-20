@@ -33,7 +33,7 @@ class State:
         elif char == negateChar:
             return SkipNextChar(self)
         else:
-            print("No transition")
+            print("No transition with {}".format(self))
             return self
 
 class Initial(State):
@@ -56,10 +56,12 @@ class InGarbage(State):
         if char == endGarbageChar:
             return self.getPreviousState()
         else:
+            print("No transition with {} (still in garbage)".format(self))
             return self
 
 class SkipNextChar(State):
     def handleChar(self, char):
+        print("Skipping current char;", end=" ")
         return self.getPreviousState()
 
 stream = ""
