@@ -30,6 +30,7 @@ with open("input.txt", "r") as instructionFile:
     instructions = instructionFile.readlines()
 
 valueByRegister = {}
+maxValues = []
 
 for instruction in instructions:
     splitIn = instruction.split()
@@ -57,4 +58,7 @@ for instruction in instructions:
 
         valueByRegister[targetRegister] += targetAddor
 
+    maxValues.append(getLargestRegisterValue(valueByRegister))
+
 print("Largest value in any register is {}".format(getLargestRegisterValue(valueByRegister)))
+print("Largest value in any register at any point in time is {}".format(max(maxValues)))
