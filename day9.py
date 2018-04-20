@@ -5,6 +5,7 @@ endGroupChar = "}"
 negateChar = "!"
 
 totalPoints = 0
+garbageCount = 0
 
 class State:
     def __init__(self, previousState):
@@ -53,11 +54,14 @@ class InGroup(State):
 
 class InGarbage(State):
     def handleChar(self, char):
+        global garbageCount
+
         if char == endGarbageChar:
             return self.getPreviousState()
         elif char == negateChar:
             return SkipNextChar(self)
         else:
+            garbageCount += 1
             print("No transition with {} (still in garbage)".format(self))
             return self
 
@@ -74,4 +78,6 @@ currentState = Initial(None)
 for char in stream:
     currentState = currentState.handleChar(char)
 
-print("CurrentState: {}; totalPoints: {}".format(currentState, totalPoints))
+print("CurrentState: {}; totalPoints: {}; garbageCount: {}".format(
+    currentState, totalPoints, garbageCount)
+)
