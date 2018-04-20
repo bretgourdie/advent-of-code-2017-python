@@ -10,10 +10,8 @@ garbageCount = 0
 class State:
     def __init__(self, previousState):
         self.previousState = previousState
-        print("New State from {} to {}".format(previousState, self))
 
     def getPreviousState(self):
-        print("Old State from {} to {}".format(self, self.previousState))
         return self.previousState
 
     def __repr__(self):
@@ -34,7 +32,6 @@ class State:
         elif char == negateChar:
             return SkipNextChar(self)
         else:
-            print("No transition with {}".format(self))
             return self
 
 class Initial(State):
@@ -62,12 +59,10 @@ class InGarbage(State):
             return SkipNextChar(self)
         else:
             garbageCount += 1
-            print("No transition with {} (still in garbage)".format(self))
             return self
 
 class SkipNextChar(State):
     def handleChar(self, char):
-        print("Skipping current char;", end=" ")
         return self.getPreviousState()
 
 stream = ""
