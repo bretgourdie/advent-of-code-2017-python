@@ -22,23 +22,19 @@
     <Content Include="input.txt" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="day1.py" />
+    <Compile Include="day01.py" />
+    <Compile Include="day02.py" />
+    <Compile Include="day03-1.py" />
+    <Compile Include="day03-2.py" />
+    <Compile Include="day04.py" />
+    <Compile Include="day05.py" />
+    <Compile Include="day06.py" />
+    <Compile Include="day07.py" />
+    <Compile Include="day08.py" />
+    <Compile Include="day09.py" />
     <Compile Include="day10-1.py" />
     <Compile Include="day10-2.py" />
     <Compile Include="day11.py" />
-    <Compile Include="day2.py" />
-    <Compile Include="day3-1.py" />
-    <Compile Include="day3-2.py" />
-    <Compile Include="day4.py" />
-    <Compile Include="day5.py" />
-    <Compile Include="day6.py" />
-    <Compile Include="day7.py" />
-    <Compile Include="day8.py">
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Include="day9.py">
-      <SubType>Code</SubType>
-    </Compile>
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)\Python Tools\Microsoft.PythonTools.targets" />
 </Project>
