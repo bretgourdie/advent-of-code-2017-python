@@ -4,24 +4,40 @@ with open("input.txt", "r") as lengthsFile:
     lengths = [ord(x) for x in lengthsFile.readline()]
     lengths += [17, 31, 73, 47, 23]
 
-numElements =256 
+numElements = 256 
+numRounds = 64
 string = [x for x in range(numElements)]
 
 currentPosition = 0
 skipSize = 0
-for length in lengths:
 
-    slice = []
-    for indexOffset in range(length):
-        moddedIndexOffset = (currentPosition + indexOffset) % len(string)
-        slice.append(string[moddedIndexOffset])
+for round in range(numRounds):
+    for length in lengths:
 
-    for indexOffset in range(length):
-        moddedIndexOffset = (currentPosition + indexOffset) % len(string)
-        string[moddedIndexOffset] = slice[::-1][indexOffset]
+        slice = []
+        for indexOffset in range(length):
+            moddedIndexOffset = (currentPosition + indexOffset) % len(string)
+            slice.append(string[moddedIndexOffset])
 
-    currentPosition += length + skipSize
+        for indexOffset in range(length):
+            moddedIndexOffset = (currentPosition + indexOffset) % len(string)
+            string[moddedIndexOffset] = slice[::-1][indexOffset]
 
-    skipSize += 1
+        currentPosition += length + skipSize
 
-print("First two numbers multiplied are {}".format(string[0] * string[1]))
+        skipSize += 1
+
+denseHash = []
+numNumbersInDenseHash = 16
+
+for hashElementNumber in range(numNumbersInDenseHash):
+    hashElement = 0
+    for blockElement in range(numNumbersInDenseHash):
+        hashElement ^= string[hashElementNumber * 16 + blockElement]
+    denseHash.append(hashElement)
+
+hexString = ""
+for denseHashElement in denseHash:
+    hexString += hex(denseHashElement)[2:]
+
+print(hexString)
