@@ -2,6 +2,7 @@
 lengths = []
 with open("input.txt", "r") as lengthsFile:
     lengths = [ord(x) for x in lengthsFile.readline()]
+    lengths += [17, 31, 73, 47, 23]
 
 numElements =256 
 string = [x for x in range(numElements)]
