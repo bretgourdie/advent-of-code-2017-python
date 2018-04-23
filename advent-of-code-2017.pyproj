@@ -5,7 +5,7 @@
     <SchemaVersion>2.0</SchemaVersion>
     <ProjectGuid>{75f4f349-90cd-47f8-b47d-742ddc9955b7}</ProjectGuid>
     <ProjectHome />
-    <StartupFile>day11.py</StartupFile>
+    <StartupFile>day12.py</StartupFile>
     <SearchPath />
     <WorkingDirectory>.</WorkingDirectory>
     <OutputPath>.</OutputPath>
@@ -35,6 +35,9 @@
     <Compile Include="day10-1.py" />
     <Compile Include="day10-2.py" />
     <Compile Include="day11.py" />
+    <Compile Include="day12.py">
+      <SubType>Code</SubType>
+    </Compile>
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)\Python Tools\Microsoft.PythonTools.targets" />
 </Project>
