@@ -7,23 +7,24 @@ def getSource(pipe):
 def getAssociations(pipe):
     return [x.strip() for x in getSourceAssociationSplit(pipe)[1].split(", ")]
 
-def canAssociate(source, associations, associationsBySource, targetSource, originator, firstIteration):
-    if targetSource in associations or source == targetSource:
+def canAssociate(source, associations, currentPath):
+    global processedSources 
+    global associationsBySource
+    global targetSource
+
+    if targetSource in associations or source == targetSource or source in processedSources:
+        for association in associations:
+            processedSources[association] = True
         return True
 
-    if not firstIteration and source == originator:
+    if source in currentPath:
         return False
 
-    canGetToTarget = False
     for association in associations:
-        newAssociations = associationsBySource[association]
-        canGetToTarget = canGetToTarget or canAssociate(
-            association,
-            newAssociations,
-            associationsBySource,
-            targetSource,
-            originator,
-            firstIteration=False)
+        canGetToTarget = False
+        if association not in processedSources:
+            result = canAssociate(association, associationsBySource[association], currentPath + [source])
+            canGetToTarget = canGetToTarget or result
 
     return canGetToTarget
 
@@ -39,10 +40,12 @@ for pipe in pipes:
     associationsBySource[source] = associations
 
 targetSource = "0"
-referencingSources = []
+processedSources = {}
 
 for source, associations in associationsBySource.items():
-    if canAssociate(source, associations, associationsBySource, targetSource, source, firstIteration=True):
-        referencingSources.append(source)
+    if source not in processedSources:
+        result = canAssociate(source, associations, [])
+        processedSources[source] = result
 
+referencingSources = [source for source, doesReference in processedSources.items() if doesReference]
 print("Number of programs in group that contains program ID {} is {}".format(targetSource, len(referencingSources)))
