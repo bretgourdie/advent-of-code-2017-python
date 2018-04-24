@@ -5,7 +5,7 @@ def getSource(pipe):
     return getSourceAssociationSplit(pipe)[0]
 
 def getAssociations(pipe):
-    return getSourceAssociationSplit(pipe)[1].split(", ")
+    return [x.strip() for x in getSourceAssociationSplit(pipe)[1].split(", ")]
 
 def canAssociate(source, associations, associationsBySource, targetSource, originator, firstIteration):
     if targetSource in associations or source == targetSource:
@@ -17,7 +17,13 @@ def canAssociate(source, associations, associationsBySource, targetSource, origi
     canGetToTarget = False
     for association in associations:
         newAssociations = associationsBySource[association]
-        canGetToTarget = canGetToTarget or canAssociate(association, newAssociations, associationsBySource, targetSource, originator, True)
+        canGetToTarget = canGetToTarget or canAssociate(
+            association,
+            newAssociations,
+            associationsBySource,
+            targetSource,
+            originator,
+            firstIteration=False)
 
     return canGetToTarget
 
@@ -36,7 +42,7 @@ targetSource = "0"
 referencingSources = []
 
 for source, associations in associationsBySource.items():
-    if canAssociate(source, associations, associationsBySource, targetSource, source, False):
+    if canAssociate(source, associations, associationsBySource, targetSource, source, firstIteration=True):
         referencingSources.append(source)
 
 print("Number of programs in group that contains program ID {} is {}".format(targetSource, len(referencingSources)))
