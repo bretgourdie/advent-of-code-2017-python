@@ -20,11 +20,17 @@ def canAssociate(source, associations, currentPath):
     if source in currentPath:
         return False
 
+    canGetToTarget = False
     for association in associations:
-        canGetToTarget = False
         if association not in processedSources:
             result = canAssociate(association, associationsBySource[association], currentPath + [source])
             canGetToTarget = canGetToTarget or result
+        else:
+            canGetToTarget = canGetToTarget or processedSources[association]
+
+    if canGetToTarget:
+        for association in associations:
+            processedSources[association] = True
 
     return canGetToTarget
 
