@@ -7,32 +7,25 @@ def getSource(pipe):
 def getAssociations(pipe):
     return [x.strip() for x in getSourceAssociationSplit(pipe)[1].split(", ")]
 
-def canAssociate(source, associations, currentPath):
-    global processedSources 
+def getAllContacts(source, associations, path):
+    global sourceToContacts
     global associationsBySource
-    global targetSource
 
-    if targetSource in associations or source == targetSource or source in processedSources:
-        for association in associations:
-            processedSources[association] = True
-        return True
+    if source in path:
+        return []
 
-    if source in currentPath:
-        return False
+    nonDuplicatedAssociations = [association for association in associations if association != source]
 
-    canGetToTarget = False
-    for association in associations:
-        if association not in processedSources:
-            result = canAssociate(association, associationsBySource[association], currentPath + [source])
-            canGetToTarget = canGetToTarget or result
-        else:
-            canGetToTarget = canGetToTarget or processedSources[association]
+    contacts = [source] + nonDuplicatedAssociations
 
-    if canGetToTarget:
-        for association in associations:
-            processedSources[association] = True
+    for association in nonDuplicatedAssociations:
+        subContacts = getAllContacts(association, associationsBySource[association], path + [source])
 
-    return canGetToTarget
+        for subContact in subContacts:
+            if subContact not in contacts:
+                contacts.append(subContact)
+
+    return contacts
 
 pipes = []
 with open("input.txt", "r") as pipesFile:
@@ -46,12 +39,23 @@ for pipe in pipes:
     associationsBySource[source] = associations
 
 targetSource = "0"
-processedSources = {}
+sourceToContacts = {}
 
 for source, associations in associationsBySource.items():
-    if source not in processedSources:
-        result = canAssociate(source, associations, [])
-        processedSources[source] = result
+    sourceToContacts[source] = getAllContacts(source, associations, path=[])
 
-referencingSources = [source for source, doesReference in processedSources.items() if doesReference]
-print("Number of programs in group that contains program ID {} is {}".format(targetSource, len(referencingSources)))
+groupToCount = {}
+for source, contacts in sourceToContacts.items():
+    sortedTupleContacts = tuple(sorted(contacts))
+
+    if sortedTupleContacts not in groupToCount:
+        groupToCount[sortedTupleContacts] = 0
+
+    groupToCount[sortedTupleContacts] += 1
+
+for group, count in groupToCount.items():
+    if targetSource in group:
+        print("Number of programs that contain program ID {} is {}".format(targetSource, count))
+        break
+
+print("Number of groups: {}".format(len(groupToCount)))
