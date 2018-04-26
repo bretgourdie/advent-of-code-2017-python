@@ -4,13 +4,12 @@ class Scanner():
         self.range = range
         self.scannerIndex = 0
         self.stepDirection = 1
-        self.lowerBound = -1
-        self.scannerIndex = 0
+        self.__lowerBound = -1
 
     def tick(self):
         newIndex = self.scannerIndex + self.stepDirection
 
-        if newIndex == self.lowerBound or newIndex == self.range:
+        if newIndex == self.__lowerBound or newIndex == self.range:
             self.stepDirection *= -1
             newIndex = self.scannerIndex + self.stepDirection
 
@@ -25,6 +24,18 @@ class Scanner():
         else:
             return 0
 
+class Rider():
+    def __init__(self, delay, maxDepth):
+        self.delay = delay
+        self.depth = 0
+        self.maxDepth = maxDepth
+        self.wasCaught = False
+
+    def completeWithoutBeingCaught(self):
+        return self.depth > self.maxDepth
+
+    def __repr__(self):
+        return "Rider delay: {}, depth: {}, successful: {}".format(self.delay, self.depth, self.completeWithoutBeingCaught())
 
 def splitDepthAndRange(rawDepthRange):
     theSplit = rawDepthRange.split(": ")
@@ -45,6 +56,9 @@ def getRawFile():
 
     return rawDepthRanges
 
+def getAllSuccessfulRiders(riders):
+    return [rider for rider in riders if rider.completeWithoutBeingCaught()]
+
 rawDepthRanges = getRawFile()
 depthToScanner = createDepthToScanner(rawDepthRanges)
 maxDepth = max([int(depth) for depth in depthToScanner])
@@ -60,31 +74,27 @@ for curDepth in range(maxDepth + 1):
 
 print("Total severity: {}".format(totalSeverity))
 
-delayTicks = 1
-while True:
-    wasCaught = False
-    depthToScanner = createDepthToScanner(rawDepthRanges)
-    maxDepth = max([int(depth) for depth in depthToScanner])
+delayTicks = 0
+depthToScanner = createDepthToScanner(rawDepthRanges)
+maxDepth = max([int(depth) for depth in depthToScanner])
+riders = []
 
-    for delayTick in range(delayTicks):
-        for depth, scanner in depthToScanner.items():
-            scanner.tick()
+while len(getAllSuccessfulRiders(riders)) == 0:
+    riders.append(Rider(delayTicks, maxDepth))
 
-    for curDepth in range(maxDepth + 1):
+    for rider in riders:
+        if rider.depth in depthToScanner:
+            scanner = depthToScanner[rider.depth]
+            rider.wasCaught = scanner.caughtPacket()
+        rider.depth += 1
 
-        if curDepth in depthToScanner:
-            scanner = depthToScanner[curDepth]
-            wasCaught = wasCaught or scanner.caughtPacket()
+    for rider in [rider for rider in riders if rider.wasCaught]:
+        riders.remove(rider)
 
-        if wasCaught:
-            break
+    for depth, scanner in depthToScanner.items():
+        scanner.tick()
 
-        for depth, scanner in depthToScanner.items():
-            scanner.tick()
+    delayTicks += 1
 
-    if not wasCaught:
-        break
-    else:
-        delayTicks += 1
-
-print("Delay needed: {}".format(delayTicks))
+for rider in getAllSuccessfulRiders(riders):
+    print(rider)
