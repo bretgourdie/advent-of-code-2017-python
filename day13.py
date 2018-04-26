@@ -16,11 +16,11 @@ class Scanner():
 
         self.scannerIndex = newIndex
 
-    def wasCaught(self):
+    def caughtPacket(self):
         return self.scannerIndex == 0
     
     def getSeverity(self):
-        if self.wasCaught():
+        if self.caughtPacket():
             return self.range * self.depth
         else:
             return 0
@@ -30,19 +30,23 @@ def splitDepthAndRange(rawDepthRange):
     theSplit = rawDepthRange.split(": ")
     return (theSplit[0], theSplit[1].strip())
 
-rawDepthRanges = []
-with open("input.txt", "r") as depthRangeFile:
-    rawDepthRanges = depthRangeFile.readlines()
+def createDepthToScanner():
+    rawDepthRanges = []
+    with open("input.txt", "r") as depthRangeFile:
+        rawDepthRanges = depthRangeFile.readlines()
 
-depthToScanner = {}
-for rawDepthRange in rawDepthRanges:
-    strDepth, strRange = splitDepthAndRange(rawDepthRange)
-    depthToScanner[int(strDepth)] = Scanner(int(strDepth), int(strRange))
+    depthToScanner = {}
+    for rawDepthRange in rawDepthRanges:
+        strDepth, strRange = splitDepthAndRange(rawDepthRange)
+        depthToScanner[int(strDepth)] = Scanner(int(strDepth), int(strRange))
 
+    return depthToScanner
+
+
+depthToScanner = createDepthToScanner()
 maxDepth = max([int(depth) for depth in depthToScanner])
 totalSeverity = 0
-maxDepthRange = range(maxDepth + 1)
-for curDepth in maxDepthRange:
+for curDepth in range(maxDepth + 1):
 
     if curDepth in depthToScanner:
         scanner = depthToScanner[curDepth]
@@ -52,3 +56,29 @@ for curDepth in maxDepthRange:
         scanner.tick()
 
 print("Total severity: {}".format(totalSeverity))
+
+delayTicks = 1
+while True:
+    wasCaught = False
+    depthToScanner = createDepthToScanner()
+    maxDepth = max([int(depth) for depth in depthToScanner])
+
+    for delayTick in range(delayTicks):
+        for depth, scanner in depthToScanner.items():
+            scanner.tick()
+
+    for curDepth in range(maxDepth + 1):
+
+        if curDepth in depthToScanner:
+            scanner = depthToScanner[curDepth]
+            wasCaught = wasCaught or scanner.caughtPacket()
+
+        for depth, scanner in depthToScanner.items():
+            scanner.tick()
+
+    if not wasCaught:
+        break
+    else:
+        delayTicks += 1
+
+print("Delay needed: {}".format(delayTicks))
