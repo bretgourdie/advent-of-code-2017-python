@@ -30,11 +30,7 @@ def splitDepthAndRange(rawDepthRange):
     theSplit = rawDepthRange.split(": ")
     return (theSplit[0], theSplit[1].strip())
 
-def createDepthToScanner():
-    rawDepthRanges = []
-    with open("input.txt", "r") as depthRangeFile:
-        rawDepthRanges = depthRangeFile.readlines()
-
+def createDepthToScanner(rawDepthRanges):
     depthToScanner = {}
     for rawDepthRange in rawDepthRanges:
         strDepth, strRange = splitDepthAndRange(rawDepthRange)
@@ -42,8 +38,15 @@ def createDepthToScanner():
 
     return depthToScanner
 
+def getRawFile():
+    rawDepthRanges = []
+    with open("input.txt", "r") as depthRangeFile:
+        rawDepthRanges = depthRangeFile.readlines()
 
-depthToScanner = createDepthToScanner()
+    return rawDepthRanges
+
+rawDepthRanges = getRawFile()
+depthToScanner = createDepthToScanner(rawDepthRanges)
 maxDepth = max([int(depth) for depth in depthToScanner])
 totalSeverity = 0
 for curDepth in range(maxDepth + 1):
@@ -60,7 +63,7 @@ print("Total severity: {}".format(totalSeverity))
 delayTicks = 1
 while True:
     wasCaught = False
-    depthToScanner = createDepthToScanner()
+    depthToScanner = createDepthToScanner(rawDepthRanges)
     maxDepth = max([int(depth) for depth in depthToScanner])
 
     for delayTick in range(delayTicks):
@@ -72,6 +75,9 @@ while True:
         if curDepth in depthToScanner:
             scanner = depthToScanner[curDepth]
             wasCaught = wasCaught or scanner.caughtPacket()
+
+        if wasCaught:
+            break
 
         for depth, scanner in depthToScanner.items():
             scanner.tick()
