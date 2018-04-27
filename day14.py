@@ -39,8 +39,9 @@ for row in range(dimension):
     currentKnotHash = knothash.generateHash(currentKnotHashInput)
     decimalKnotHash = int(currentKnotHash, 16)
     rawBinaryKnotHash = bin(decimalKnotHash)
-    no0xBinaryKnotHash = rawBinaryKnotHash[2:]
-    binaryKnotHash = no0xBinaryKnotHash + "0" * (dimension - len(no0xBinaryKnotHash))
+    binaryKnotHashNo0 = rawBinaryKnotHash[2:]
+    binaryKnotHash = "0" * (dimension - len(binaryKnotHashNo0)) + binaryKnotHashNo0
+
 
     gridRow = []
     for digit in str(binaryKnotHash):
