@@ -39,4 +39,4 @@ class KnotHash():
         for denseHashElement in denseHash:
             hexString += hex(denseHashElement)[2:]
 
-        return hexString
+        return hexString.zfill(32)
