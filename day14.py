@@ -1,6 +1,6 @@
 from knothash import KnotHash
 
-def floodFill(coordinate, groupState, groupNumber):
+def floodFill(coordinate, groupNumber):
     global coordsToGroup
     global grid
 
@@ -9,13 +9,13 @@ def floodFill(coordinate, groupState, groupNumber):
         if x >= 0 and x < len(grid) and y >= 0 and y < len(grid):
             cellState = grid[x][y]
 
-            if cellState == groupState:
+            if cellState:
                 coordsToGroup[coordinate] = groupNumber
 
-                floodFill((x-1, y), groupState, groupNumber) # north
-                floodFill((x+1, y), groupState, groupNumber) # south
-                floodFill((x, y+1), groupState, groupNumber) # east
-                floodFill((x, y-1), groupState, groupNumber) # west
+                floodFill((x-1, y), groupNumber) # north
+                floodFill((x+1, y), groupNumber) # south
+                floodFill((x, y+1), groupNumber) # east
+                floodFill((x, y-1), groupNumber) # west
 
 def printGrid(grid):
     with open("gridFile.txt", "w") as gridFile:
@@ -24,6 +24,21 @@ def printGrid(grid):
                 toPrint = "#" if col else "."
                 gridFile.write(toPrint)
             gridFile.write("\n")
+
+def printGroups(grid, coordsToGroup):
+    with open("groupFile.txt", "w") as groupFile:
+        for rowIndex, row in enumerate(grid):
+            for colIndex, col in enumerate(row):
+                coordinate = (rowIndex, colIndex)
+
+                group = "...."
+                if coordinate in coordsToGroup:
+                    group = coordsToGroup[coordinate]
+
+                toPrint = str(group).zfill(4)
+
+                groupFile.write(toPrint + " ")
+            groupFile.write("\n")
 
 inputStr = ""
 with open("input.txt", "r") as inputFile:
@@ -60,8 +75,9 @@ for rowIndex, row in enumerate(grid):
     for colIndex, col in enumerate(row):
          coordinate = (rowIndex, colIndex)
 
-         if coordinate not in coordsToGroup:
-             floodFill(coordinate, col, groupNumber)
+         if col and coordinate not in coordsToGroup:
+             floodFill(coordinate, groupNumber)
              groupNumber += 1
 
+printGroups(grid, coordsToGroup)
 print("Number of groups: {}".format(groupNumber))
