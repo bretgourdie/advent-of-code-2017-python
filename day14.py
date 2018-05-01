@@ -17,29 +17,6 @@ def floodFill(coordinate, groupNumber):
                 floodFill((x, y+1), groupNumber) # east
                 floodFill((x, y-1), groupNumber) # west
 
-def printGrid(grid):
-    with open("gridFile.txt", "w") as gridFile:
-        for rowIndex, row in enumerate(grid):
-            for colIndex, col in enumerate(row):
-                toPrint = "#" if col else "."
-                gridFile.write(toPrint)
-            gridFile.write("\n")
-
-def printGroups(grid, coordsToGroup):
-    with open("groupFile.txt", "w") as groupFile:
-        for rowIndex, row in enumerate(grid):
-            for colIndex, col in enumerate(row):
-                coordinate = (rowIndex, colIndex)
-
-                group = "...."
-                if coordinate in coordsToGroup:
-                    group = coordsToGroup[coordinate]
-
-                toPrint = str(group).zfill(4)
-
-                groupFile.write(toPrint + " ")
-            groupFile.write("\n")
-
 inputStr = ""
 with open("input.txt", "r") as inputFile:
     inputStr = inputFile.readline().strip()
@@ -67,8 +44,6 @@ for row in range(dimension):
 
 print("Number of used squares: {}".format(usedSquares))
 
-printGrid(grid)
-
 coordsToGroup = {}
 groupNumber = 0
 for rowIndex, row in enumerate(grid):
@@ -79,5 +54,4 @@ for rowIndex, row in enumerate(grid):
              floodFill(coordinate, groupNumber)
              groupNumber += 1
 
-printGroups(grid, coordsToGroup)
 print("Number of groups: {}".format(groupNumber))
