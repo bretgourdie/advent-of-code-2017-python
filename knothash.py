@@ -34,9 +34,10 @@ class KnotHash():
 
         for denseHashElementIndex in range(numDenseHashElements):
             denseHashElement = 0
-            for element in range(numDenseHashElements):
-                elementIndex = element + denseHashElementIndex * numDenseHashElements
-                denseHashElement ^= string[elementIndex]
+            for elementNumber in range(numDenseHashElements):
+                elementIndex = elementNumber + denseHashElementIndex * numDenseHashElements
+                element = string[elementIndex]
+                denseHashElement ^= element
 
             denseHashDecimal.append(denseHashElement)
 
@@ -45,9 +46,9 @@ class KnotHash():
         for denseHashElement in denseHashDecimal:
             denseHashHex = hex(denseHashElement)
             denseHashHexNoPrefix = denseHashHex[2:]
-            hexRepresentation.append(denseHashHexNoPrefix)
+            paddedDenseHashHexNoPrefix = denseHashHexNoPrefix.zfill(2)
+            hexRepresentation.append(paddedDenseHashHexNoPrefix)
 
         stringHexRepresentation = "".join(hexRepresentation)
-        paddedStringHexRepresentation = stringHexRepresentation.zfill(32)
 
-        return paddedStringHexRepresentation
+        return stringHexRepresentation
