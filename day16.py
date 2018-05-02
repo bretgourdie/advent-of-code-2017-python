@@ -47,7 +47,21 @@ with open("input.txt", "r") as danceMoveFile:
 numberOfPrograms = 16
 programs = [chr(x) for x in range(ord("a"), ord("a") + numberOfPrograms)]
 
+originalPrograms = programs[:]
+
 for danceMove in danceMoves:
     programs = interpretDanceMove(danceMove, programs)
 
+newIndexes = {}
+for originalIndex, element in originalPrograms:
+    newIndex = programs.index(element)
+    newIndexes[originalIndex] = newIndex
+
+numberOfDances = 1000000000
+nextProgram = []
+for elementIndex in range(len(programs)):
+
+
 print("Program order: {}".format("".join(programs)))
+
+
