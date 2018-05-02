@@ -5,8 +5,7 @@
     <SchemaVersion>2.0</SchemaVersion>
     <ProjectGuid>{75f4f349-90cd-47f8-b47d-742ddc9955b7}</ProjectGuid>
     <ProjectHome />
-    <StartupFile>
-    </StartupFile>
+    <StartupFile>day15-2.py</StartupFile>
     <SearchPath />
     <WorkingDirectory>.</WorkingDirectory>
     <OutputPath>.</OutputPath>
@@ -46,6 +45,7 @@
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="day15-1.py" />
+    <Compile Include="day15-2.py" />
     <Compile Include="knothash.py">
       <SubType>Code</SubType>
     </Compile>
