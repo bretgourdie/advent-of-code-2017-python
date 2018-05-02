@@ -19,7 +19,7 @@ generatorToFactor = {
 totalMatching = 0
 modulusDivisor = 2147483647
 
-numberOfPairsToGenerate = 40_000_000
+numberOfPairsToGenerate = 40000000
 for pair in range(numberOfPairsToGenerate):
     for generator, number in generatorToNumber.items():
         multedNumber = number * generatorToFactor[generator]
