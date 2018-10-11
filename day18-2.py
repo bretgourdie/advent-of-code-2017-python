@@ -1,106 +1,144 @@
-def getRegisterValueOrNumber(arg):
-    strippedArg = arg.strip()
-    if len(strippedArg) == 1 and str.isalpha(strippedArg):
-        global registerToValue
-        return registerToValue[arg]
-    else:
-        return int(arg)
+from enum import Enum
 
-def insertIfNot(arg):
-    global registerToValue
+class SndAndRcv(Enum):
+    SoundAndRecover = 1
+    SendAndReceive = 2
 
-    if arg not in registerToValue:
-        registerToValue[arg] = 0
+class Duet:
+    def __init__(self, programId, sndAndRcv, instructions):
+        self.registerToValue = {}
+        self.currentInstructionIndex = 0
+        self.lastPlayedSound = None
+        self.firstRecoveredSound = None
+        self.wasSuccessfulJump = False
+        self.instructions = instructions
+        self.programId = programId
+        self.isReceiving = False
 
-def sound(args):
-    global lastPlayedSound
-    lastPlayedSound = getRegisterValueOrNumber(args[0])
+        self.dictToMethod = {
+            "set": Duet.setValue,
+            "add": Duet.add,
+            "mul": Duet.multiply,
+            "mod": Duet.mod,
+            "jgz": Duet.jump
+        }
 
-def set(args):
-    global registerToValue
+        if sndAndRcv == SndAndRcv.SoundAndRecover:
+            self.dictToMethod["snd"] = Duet.sound
+            self.dictToMethod["rcv"] = Duet.recover
+        elif sndAndRcv == SndAndRcv.SendAndReceive:
+            self.dictToMethod["snd"] = Duet.send
+            self.dictToMethod["rcv"] = Duet.receive
 
-    insertIfNot(args[0])
+    def getRegisterValueOrNumber(self, arg):
+        strippedArg = arg.strip()
+        if len(strippedArg) == 1 and str.isalpha(strippedArg):
+            return self.registerToValue[arg]
+        else:
+            return int(arg)
 
-    registerToValue[args[0]] = getRegisterValueOrNumber(args[1])
+    def insertIfNot(self, arg):
+        if arg not in self.registerToValue:
+            self.registerToValue[arg] = 0
 
-def add(args):
-    global registerToValue
+    def sound(self, args):
+        self.lastPlayedSound = self.getRegisterValueOrNumber(args[0])
 
-    insertIfNot(args[0])
+    def send(self, args):
+        pass
 
-    registerToValue[args[0]] += getRegisterValueOrNumber(args[1])
+    def setValue(self, args):
+        self.insertIfNot(args[0])
 
-def multiply(args):
-    global registerToValue
+        self.registerToValue[args[0]] = self.getRegisterValueOrNumber(args[1])
 
-    insertIfNot(args[0])
+    def add(self, args):
+        self.insertIfNot(args[0])
 
-    registerToValue[args[0]] *= getRegisterValueOrNumber(args[1])
+        self.registerToValue[args[0]] += self.getRegisterValueOrNumber(args[1])
 
-def mod(args):
-    global registerToValue
+    def multiply(self, args):
+        self.insertIfNot(args[0])
 
-    insertIfNot(args[0])
+        self.registerToValue[args[0]] *= self.getRegisterValueOrNumber(args[1])
 
-    registerToValue[args[0]] %= getRegisterValueOrNumber(args[1])
+    def mod(self, args):
+        self.insertIfNot(args[0])
 
-def recover(args):
-    if getRegisterValueOrNumber(args[0]) != 0:
-        global lastPlayedSound, firstRecoveredSound
+        self.registerToValue[args[0]] %= self.getRegisterValueOrNumber(args[1])
 
-        if firstRecoveredSound is None:
-            firstRecoveredSound = lastPlayedSound
+    def recover(self, args):
+        if self.getRegisterValueOrNumber(args[0]) != 0 and self.firstRecoveredSound is None:
+            self.firstRecoveredSound = self.lastPlayedSound
 
-def jump(args):
-    value = getRegisterValueOrNumber(args[0])
+    def receive(self, args):
+        pass
 
-    if value > 0:
-        global currentInstructionIndex, wasSuccessfulJump
-        currentInstructionIndex += getRegisterValueOrNumber(args[1])
-        wasSuccessfulJump = True
+    def jump(self, args):
+        value = self.getRegisterValueOrNumber(args[0])
+
+        if value > 0:
+            self.currentInstructionIndex += self.getRegisterValueOrNumber(args[1])
+            self.wasSuccessfulJump = True
 
 
-dictToMethod = {
-    "snd": sound,
-    "set": set,
-    "add": add,
-    "mul": multiply,
-    "mod": mod,
-    "rcv": recover,
-    "jgz": jump
-}
 
-def getIncrement(instruction):
-    global wasSuccessfulJump
-    if not wasSuccessfulJump:
-        return 1
-    else:
-        wasSuccessfulJump = False
-        return 0
+    def getIncrement(self, instruction):
+        if self.wasSuccessfulJump:
+            self.wasSuccessfulJump = False
+            return 0
+        else:
+            return 1
 
-def interpretInstruction(instruction):
-    splitInstruction = instruction.split()
+    def interpretInstruction(self, instruction):
+        splitInstruction = instruction.split()
 
-    method = dictToMethod[splitInstruction[0]]
+        method = self.dictToMethod[splitInstruction[0]]
 
-    method(splitInstruction[1:])
+        method(self, splitInstruction[1:])
 
-    global currentInstructionIndex
-    currentInstructionIndex += getIncrement(splitInstruction[0])
+        self.currentInstructionIndex += self.getIncrement(splitInstruction[0])
+
+    def isDeadlocked(self):
+        return self.isReceiving
+
+    def shouldContinue(self):
+        withinLowerBounds = self.currentInstructionIndex >= 0
+        withinUpperBounds = self.currentInstructionIndex < len(self.instructions)
+        recoveredFirstSound = self.firstRecoveredSound is None
+        return (
+            withinLowerBounds
+            and withinUpperBounds
+            and recoveredFirstSound
+            and not self.isDeadlocked()
+        )
+
+    def update(self):
+
+        currentInstruction = self.instructions[self.currentInstructionIndex]
+
+        self.interpretInstruction(currentInstruction)
 
 with open("input.txt", "r") as instructionFile:
     instructions = instructionFile.readlines()
 
-registerToValue = {}
-currentInstructionIndex = 0
-lastPlayedSound = None
-firstRecoveredSound = None
-wasSuccessfulJump = False
+duet = Duet(0, SndAndRcv.SoundAndRecover, instructions)
 
-while currentInstructionIndex >= 0 and currentInstructionIndex < len(instructions) and firstRecoveredSound is None:
-    currentInstruction = instructions[currentInstructionIndex]
+while duet.shouldContinue():
+    duet.update()
 
-    interpretInstruction(currentInstruction)
+print("First recovered sound is \"{}\"".format(duet.firstRecoveredSound))
+
+duets = []
+numDuets = 2
+for i in range(numDuets):
+    duets.append(Duet(i, SndAndRcv.SendAndReceive, instructions))
 
 
-print("First recovered sound is \"{}\"".format(firstRecoveredSound))
+
+
+
+
+
+
+
