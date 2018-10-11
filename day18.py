@@ -122,23 +122,14 @@ class Duet:
 with open("input.txt", "r") as instructionFile:
     instructions = instructionFile.readlines()
 
-duet = Duet(0, SndAndRcv.SoundAndRecover, instructions)
+soundAndRecoverDuet = Duet(0, SndAndRcv.SoundAndRecover, instructions)
 
-while duet.shouldContinue():
-    duet.update()
+while soundAndRecoverDuet.shouldContinue():
+    soundAndRecoverDuet.update()
 
-print("First recovered sound is \"{}\"".format(duet.firstRecoveredSound))
+print("First recovered sound is \"{}\"".format(soundAndRecoverDuet.firstRecoveredSound))
 
 duets = []
 numDuets = 2
 for i in range(numDuets):
     duets.append(Duet(i, SndAndRcv.SendAndReceive, instructions))
-
-
-
-
-
-
-
-
-
