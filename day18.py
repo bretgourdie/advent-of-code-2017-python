@@ -13,7 +13,6 @@ class Duet:
         self.wasSuccessfulJump = False
         self.instructions = instructions
         self.programId = programId
-        self.isReceiving = False
 
         self.dictToMethod = {
             "set": Duet.setValue,
@@ -99,18 +98,14 @@ class Duet:
 
         self.currentInstructionIndex += self.getIncrement(splitInstruction[0])
 
-    def isDeadlocked(self):
-        return self.isReceiving
-
     def shouldContinue(self):
         withinLowerBounds = self.currentInstructionIndex >= 0
         withinUpperBounds = self.currentInstructionIndex < len(self.instructions)
-        recoveredFirstSound = self.firstRecoveredSound is None
+        needFirstSound = self.firstRecoveredSound is None
         return (
             withinLowerBounds
             and withinUpperBounds
-            and recoveredFirstSound
-            and not self.isDeadlocked()
+            and needFirstSound
         )
 
     def update(self):
@@ -118,6 +113,7 @@ class Duet:
         currentInstruction = self.instructions[self.currentInstructionIndex]
 
         self.interpretInstruction(currentInstruction)
+
 
 with open("input.txt", "r") as instructionFile:
     instructions = instructionFile.readlines()
@@ -133,3 +129,10 @@ duets = []
 numDuets = 2
 for i in range(numDuets):
     duets.append(Duet(i, SndAndRcv.SendAndReceive, instructions))
+
+while True:
+    for index, duet in enumerate(duets):
+        otherDuet = duets[(index + 1) % 2]
+
+    break
+
