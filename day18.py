@@ -14,6 +14,10 @@ class Duet:
         self.instructions = instructions
         self.programId = programId
 
+        self.receivingRegister = None
+        self.sendQueue = []
+        self.numberOfSends = 0
+
         self.dictToMethod = {
             "set": Duet.setValue,
             "add": Duet.add,
@@ -44,12 +48,17 @@ class Duet:
         self.lastPlayedSound = self.getRegisterValueOrNumber(args[0])
 
     def send(self, args):
-        pass
+        sendingValue = self.getRegisterValueOrNumber(args[0])
+        self.sendQueue.append(sendingValue)
+        self.numberOfSends += 1
 
     def setValue(self, args):
         self.insertIfNot(args[0])
 
         self.registerToValue[args[0]] = self.getRegisterValueOrNumber(args[1])
+
+    def setValue(self, register, registerValueOrNumber):
+        self.setValue([register, registerValueOrNumber])
 
     def add(self, args):
         self.insertIfNot(args[0])
@@ -71,7 +80,7 @@ class Duet:
             self.firstRecoveredSound = self.lastPlayedSound
 
     def receive(self, args):
-        pass
+        self.receivingRegister = args[0]
 
     def jump(self, args):
         value = self.getRegisterValueOrNumber(args[0])
@@ -106,14 +115,35 @@ class Duet:
             withinLowerBounds
             and withinUpperBounds
             and needFirstSound
+            and not isReceiving()
         )
 
-    def update(self):
+    def isReceiving(self):
+        return self.receivingRegister is not None
+
+    def handleReceiving(self, other):
+        received = False
+
+        if len(other.sendingQueue) > 0:
+            sentValue = other.sendingQueue.popleft()
+            self.setValue(self.receivingRegister, sentValue)
+            self.receivingRegister = None
+            received = True
+
+        return received
+
+    def update(self, other=None):
+        if self.isReceiving():
+            receiveSuccessful = self.handleReceiving(other)
+
+            if not receiveSuccessful:
+                return False
 
         currentInstruction = self.instructions[self.currentInstructionIndex]
 
         self.interpretInstruction(currentInstruction)
 
+        return True
 
 with open("input.txt", "r") as instructionFile:
     instructions = instructionFile.readlines()
@@ -134,5 +164,9 @@ while True:
     for index, duet in enumerate(duets):
         otherDuet = duets[(index + 1) % 2]
 
-    break
+    while duet.shouldContinue():
+        successfulUpdate = duet.update(otherDuet)
+
+        if not successfulUpdate:
+            break
 
