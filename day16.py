@@ -1,42 +1,74 @@
-def spin(args, programs):
-    numToMove = int(args)
-    sliceToMove = programs[-numToMove:]
-    currentBeginningSlice = programs[0:len(programs) - numToMove]
+def sPrograms(programs):
+    return "".join(programs)
 
-    programs = sliceToMove + currentBeginningSlice
+class Cycler:
+    def __init__(self):
+        self.fastLookup = set()
+        self.indexer = []
+        self.cycleDetected = False
+        self.cycleLength = -1
+        self.cycleStart = -1
+        self.cycleEnd = -1
 
-    return programs
+    def add(self, programs):
+        sp = sPrograms(programs)
 
-def exchange(args, programs):
-    positions = args.split("/")
-    posA, posB = int(positions[0]), int(positions[1])
+        self.indexer.append(sp)
 
-    programs[posA], programs[posB] = programs[posB], programs[posA]
+        self.cycleDetected = sp in self.fastLookup
 
-    return programs
+        if sp not in self.fastLookup:
+            self.fastLookup.add(sp)
 
-def partner(args, programs):
-    partners = args.split("/")
-    partnerA, partnerB = partners[0], partners[1]
+        else:
+            self.cycleStart = self.indexer.index(sp)
+            self.cycleEnd = self.indexer.index(sp, self.cycleStart + 1)
+            self.cycleLength = self.cycleEnd - self.cycleStart
 
-    posA = programs.index(partnerA)
-    posB = programs.index(partnerB)
+def spin(programs, args):
+    sliceToSpin = int(args)
+    length = len(programs)
+    pivot = length - sliceToSpin
+    spinningToFront = programs[-sliceToSpin:]
+    remainder = programs[:pivot]
+    return spinningToFront + remainder
 
-    exchange(str(posA) + "/" + str(posB), programs)
+def swap(programs, posA, posB):
+    swappingPrograms = programs[:]
 
-    return programs
+    swappingPrograms[posA], swappingPrograms[posB] = swappingPrograms[posB], swappingPrograms[posA]
 
-def interpretDanceMove(move, programs):
-    moveLetter = move[0]
-    args = move[1:]
-    if moveLetter == "s":
-        programs = spin(args, programs)
-    elif moveLetter == "x":
-        programs = exchange(args, programs)
-    elif moveLetter == "p":
-        programs = partner(args, programs)
-    else:
-        print("Unknown move letter {}".format(moveLetter))
+    return swappingPrograms
+
+def exchange(programs, args):
+    sPosA, sPosB = args.split("/")
+
+    posA, posB = int(sPosA), int(sPosB)
+
+    return swap(programs, posA, posB)
+
+def partner(programs, args):
+    progA, progB = args.split("/")
+
+    posA = programs.index(progA)
+    posB = programs.index(progB)
+
+    return swap(programs, posA, posB)
+
+def interpretDanceMove(programs, danceMove):
+    movement = danceMove[0]
+    args = danceMove[1:]
+
+    if movement == "s":
+        return spin(programs, args)
+    elif movement == "x":
+        return exchange(programs, args)
+    elif movement == "p":
+        return partner(programs, args)
+
+def performFullDance(programs, danceMoves):
+    for danceMove in danceMoves:
+        programs = interpretDanceMove(programs, danceMove)
 
     return programs
 
@@ -46,32 +78,24 @@ with open("input.txt", "r") as danceMoveFile:
 
 numberOfPrograms = 16
 programs = [chr(x) for x in range(ord("a"), ord("a") + numberOfPrograms)]
-originalPrograms = programs[:]
+cycler = Cycler()
+numberOfDanceThroughs = 1000000000000
 
-numberOfDances = 1000000000
-cycles = []
-currentDance = 0
-for currentDance in range(numberOfDances):
-    if programs not in cycles:
-        cycles.append(currentDance)
-    else:
+for danceThrough in range(numberOfDanceThroughs):
+
+    cycler.add(programs)
+
+    if (cycler.cycleDetected):
         break
 
-    for danceMove in danceMoves:
-        programs = interpretDanceMove(danceMove, programs)
+    programs = performFullDance(programs, danceMoves)
 
-    if currentDance == 0:
-        print("Program order: {}".format("".join(programs)))
+    if danceThrough == 0:
+        print("Programs after first dance: {}".format(sPrograms(programs)))
 
-cycleStart = cycles.index(programs)
-cycleEnd = len(cycles)
-cycleLength = cycleEnd - cycleStart
+remainingDances = (numberOfDanceThroughs - cycler.cycleStart - cycler.cycleLength) % cycler.cycleLength
 
-while currentDance + cycleLength < numberOfDances:
-    currentDance += cycleLength
+for danceThrough in range(remainingDances):
+    programs = performFullDance(programs, danceMoves)
 
-for nonCycleCurrentDance in range(currentDance, numberOfDances):
-    for danceMove in danceMoves:
-        programs = interpretDanceMove(danceMove, programs)
-
-print("Program order: {}".format("".join(programs)))
+print("Programs after {} dances: {}".format(numberOfDanceThroughs, sPrograms(programs)))
