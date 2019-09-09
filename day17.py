@@ -1,3 +1,9 @@
+class Part:
+    def __init__(self, runs, targetIndex, strategy):
+        self.runs = runs
+        self.targetIndex = targetIndex
+        self.strategy = strategy
+
 with open("input.txt", "r") as stepsFile:
     stepsAfterRun = int(stepsFile.readline())
 
@@ -26,7 +32,11 @@ def spin(numberOfRuns, targetIndex, stepsAfterRun, answerStrategy):
 
     return answerStrategy(buffer, targetIndex)
 
-firstQuestionRuns = 2017
-firstQuestionTargetIndex = 2017
-firstQuestionResult = spin(firstQuestionRuns, firstQuestionTargetIndex, stepsAfterRun, firstQuestionAnswerStrategy)
-printAnswer(firstQuestionRuns, firstQuestionTargetIndex, firstQuestionResult)
+parts = [
+    Part(2017, 2017, firstQuestionAnswerStrategy),
+    Part(50000000, 1, secondQuestionAnswerStrategy)
+]
+
+for part in parts:
+    result = spin(part.runs, part.targetIndex, stepsAfterRun, part.strategy)
+    printAnswer(part.runs, part.targetIndex, result)
