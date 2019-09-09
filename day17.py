@@ -1,30 +1,32 @@
 with open("input.txt", "r") as stepsFile:
-    steps = int(stepsFile.readline())
+    stepsAfterRun = int(stepsFile.readline())
 
-numberOfRuns = 2017
-buffer = [0]
-currentPosition = 0
-run = 1
-for run in range(1, numberOfRuns + 1):
-    currentPosition = (currentPosition + steps) % len(buffer) + 1
-    buffer.insert(currentPosition, run)
+def firstQuestionAnswerStrategy(buffer, targetNumber):
+    targetNumberIndex = buffer.index(targetNumber)
 
-nextPosition = (currentPosition + 1) % len(buffer)
-valueAfterNumberOfRuns = buffer[nextPosition]
+    return buffer[targetNumberIndex + 1]
 
-print("Value after {} is {}".format(numberOfRuns, valueAfterNumberOfRuns))
+def secondQuestionAnswerStrategy(buffer, targetIndex):
+    return buffer[targetIndex]
 
-numberOfRuns = 50000000
-while run <= steps:
-    currentPosition = (currentPosition + steps) % len(buffer) + 1
-    buffer.insert(currentPosition, run)
-    run += 1
+def printAnswer(numberOfRuns, targetIndex, answer):
+    print("The number at {} after {} runs is {}".format(targetIndex, numberOfRuns, answer))
 
+def spin(numberOfRuns, targetIndex, stepsAfterRun, answerStrategy):
+    buffer = []
+    currentIndex = 0
+    
+    for run in range(0, numberOfRuns + 1):
+        buffer.insert(currentIndex, run)
 
+        if len(buffer) > targetIndex + 1:
+            buffer.pop()
 
-targetNumber = 0
-indexOfTargetNumber = buffer.index(targetNumber)
-nextPosition = (indexOfTargetNumber + 1) % len(buffer)
-valueAfterTargetNumber = buffer[nextPosition]
+        currentIndex = ((currentIndex + stepsAfterRun) % (run + 1)) + 1
 
-print("Value after {} is {}".format(targetNumber, valueAfterTargetNumber))
+    return answerStrategy(buffer, targetIndex)
+
+firstQuestionRuns = 2017
+firstQuestionTargetIndex = 2017
+firstQuestionResult = spin(firstQuestionRuns, firstQuestionTargetIndex, stepsAfterRun, firstQuestionAnswerStrategy)
+printAnswer(firstQuestionRuns, firstQuestionTargetIndex, firstQuestionResult)
