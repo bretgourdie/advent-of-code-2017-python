@@ -1,172 +1,78 @@
-from enum import Enum
+class SoundAndRecover():
+    def __init__(self):
+        self.lastPlayedFrequency = None
+        self.recoveredFrequency = None
 
-class SndAndRcv(Enum):
-    SoundAndRecover = 1
-    SendAndReceive = 2
+    def snd(self, frequency):
+        self.lastPlayedFrequency = frequency
+
+    def rcv(self, nonZeroCheck):
+        if nonZeroCheck != 0:
+            if self.recoveredFrequency != None:
+                self.recoveredFrequency = self.lastPlayedFrequency
 
 class Duet:
-    def __init__(self, programId, sndAndRcv, instructions):
-        self.registerToValue = {}
-        self.currentInstructionIndex = 0
-        self.lastPlayedSound = None
-        self.firstRecoveredSound = None
-        self.wasSuccessfulJump = False
+    def __init__(self, instructions, sndAndRcvStrategy):
+        self.registers = {}
+        self.sndAndRcvStrategy = sndAndRcvStrategy
         self.instructions = instructions
-        self.programId = programId
+        self.index = 0
+        self.shouldIncrement = True
 
-        self.receivingRegister = None
-        self.sendQueue = []
-        self.numberOfSends = 0
-
-        self.dictToMethod = {
-            "set": Duet.setValue,
-            "add": Duet.add,
-            "mul": Duet.multiply,
-            "mod": Duet.mod,
-            "jgz": Duet.jump
+        self.instructionToFunction = {
+            "snd": self.snd,
+            "set": self.set,
+            "add": self.add,
+            "mul": self.mul,
+            "mod": self.mod,
+            "rcv": self.rcv,
+            "jgz": self.jgz
         }
 
-        if sndAndRcv == SndAndRcv.SoundAndRecover:
-            self.dictToMethod["snd"] = Duet.sound
-            self.dictToMethod["rcv"] = Duet.recover
-        elif sndAndRcv == SndAndRcv.SendAndReceive:
-            self.dictToMethod["snd"] = Duet.send
-            self.dictToMethod["rcv"] = Duet.receive
+    def __handleShouldIncrement(self, cameFromJgz):
+        self.shouldIncrement = not cameFromJgz
 
-    def getRegisterValueOrNumber(self, arg):
-        strippedArg = arg.strip()
-        if len(strippedArg) == 1 and str.isalpha(strippedArg):
-            return self.registerToValue[arg]
+    def __initRegister(self, register):
+        if register not in self.registers:
+            self.registers[register] = 0
+
+    def __getValueFromRegisterOrImmediate(self, value):
+        if value in self.registers:
+            return registers[value]
         else:
-            return int(arg)
+            return value
 
-    def insertIfNot(self, arg):
-        if arg not in self.registerToValue:
-            self.registerToValue[arg] = 0
+    def snd(self, value):
+        self.sndAndRcvStrategy.snd(value)
 
-    def sound(self, args):
-        self.lastPlayedSound = self.getRegisterValueOrNumber(args[0])
+    def set(self, register, value):
+        self.registers[register] = value
 
-    def send(self, args):
-        sendingValue = self.getRegisterValueOrNumber(args[0])
-        self.sendQueue.append(sendingValue)
-        self.numberOfSends += 1
+    def add(self, register, value):
+        __initRegister(register)
+        self.registers[register] += value
 
-    def setValue(self, args):
-        self.insertIfNot(args[0])
+    def mul(self, register, value):
+        ___initRegister(register)
+        self.registers[register] *= value
 
-        self.registerToValue[args[0]] = self.getRegisterValueOrNumber(args[1])
+    def mod(self, register, value):
+        __initRegister(register)
+        self.registers[register] = registers[register] % value
 
-    def setValue(self, register, registerValueOrNumber):
-        self.setValue([register, registerValueOrNumber])
+    def rcv(self, value):
+        self.sndAndRcvStrategy.rcv(value)
 
-    def add(self, args):
-        self.insertIfNot(args[0])
+    def jgz(self, greaterThanZeroCheck, offset):
+        if greaterThanZeroCheck > 0:
+            self.index += offset
 
-        self.registerToValue[args[0]] += self.getRegisterValueOrNumber(args[1])
+    def process(self):
+        while self.index >= 0 and self.index < len(self.instructions):
+            instructionLine = self.instructions[index]
+            splitInstruction = instructionLine.split()
+            instruction = splitInstruction[0]
 
-    def multiply(self, args):
-        self.insertIfNot(args[0])
-
-        self.registerToValue[args[0]] *= self.getRegisterValueOrNumber(args[1])
-
-    def mod(self, args):
-        self.insertIfNot(args[0])
-
-        self.registerToValue[args[0]] %= self.getRegisterValueOrNumber(args[1])
-
-    def recover(self, args):
-        if self.getRegisterValueOrNumber(args[0]) != 0 and self.firstRecoveredSound is None:
-            self.firstRecoveredSound = self.lastPlayedSound
-
-    def receive(self, args):
-        self.receivingRegister = args[0]
-
-    def jump(self, args):
-        value = self.getRegisterValueOrNumber(args[0])
-
-        if value > 0:
-            self.currentInstructionIndex += self.getRegisterValueOrNumber(args[1])
-            self.wasSuccessfulJump = True
-
-
-
-    def getIncrement(self, instruction):
-        if self.wasSuccessfulJump:
-            self.wasSuccessfulJump = False
-            return 0
-        else:
-            return 1
-
-    def interpretInstruction(self, instruction):
-        splitInstruction = instruction.split()
-
-        method = self.dictToMethod[splitInstruction[0]]
-
-        method(self, splitInstruction[1:])
-
-        self.currentInstructionIndex += self.getIncrement(splitInstruction[0])
-
-    def shouldContinue(self):
-        withinLowerBounds = self.currentInstructionIndex >= 0
-        withinUpperBounds = self.currentInstructionIndex < len(self.instructions)
-        needFirstSound = self.firstRecoveredSound is None
-        return (
-            withinLowerBounds
-            and withinUpperBounds
-            and needFirstSound
-            and not isReceiving()
-        )
-
-    def isReceiving(self):
-        return self.receivingRegister is not None
-
-    def handleReceiving(self, other):
-        received = False
-
-        if len(other.sendingQueue) > 0:
-            sentValue = other.sendingQueue.popleft()
-            self.setValue(self.receivingRegister, sentValue)
-            self.receivingRegister = None
-            received = True
-
-        return received
-
-    def update(self, other=None):
-        if self.isReceiving():
-            receiveSuccessful = self.handleReceiving(other)
-
-            if not receiveSuccessful:
-                return False
-
-        currentInstruction = self.instructions[self.currentInstructionIndex]
-
-        self.interpretInstruction(currentInstruction)
-
-        return True
-
-with open("input.txt", "r") as instructionFile:
-    instructions = instructionFile.readlines()
-
-soundAndRecoverDuet = Duet(0, SndAndRcv.SoundAndRecover, instructions)
-
-while soundAndRecoverDuet.shouldContinue():
-    soundAndRecoverDuet.update()
-
-print("First recovered sound is \"{}\"".format(soundAndRecoverDuet.firstRecoveredSound))
-
-duets = []
-numDuets = 2
-for i in range(numDuets):
-    duets.append(Duet(i, SndAndRcv.SendAndReceive, instructions))
-
-while True:
-    for index, duet in enumerate(duets):
-        otherDuet = duets[(index + 1) % 2]
-
-    while duet.shouldContinue():
-        successfulUpdate = duet.update(otherDuet)
-
-        if not successfulUpdate:
-            break
+            function = self.instructionToFunction[instruction]
+            function(splitInstruction[1:])
 
