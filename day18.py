@@ -8,7 +8,7 @@ class SoundAndRecover():
 
     def rcv(self, nonZeroCheck):
         if nonZeroCheck != 0:
-            if self.recoveredFrequency != None:
+            if self.recoveredFrequency == None:
                 self.recoveredFrequency = self.lastPlayedFrequency
 
 class Duet:
