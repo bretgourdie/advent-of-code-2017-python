@@ -1,3 +1,5 @@
+from collections import dequeue
+
 class SoundAndRecover():
     def __init__(self):
         self.lastPlayedFrequency = None
@@ -15,6 +17,33 @@ class SoundAndRecover():
 
     def shouldEarlyTerminate(self):
         return self.recoveredFrequency != None
+
+class SendAndReceive():
+    def __init__(self):
+        self.sendingBuffer = dequeue()
+        self.otherSendAndReceive = None
+        self.isWaiting = False
+
+    def SetOtherSendAndReceive(otherSendAndReceive):
+        self.otherSendAndReceive = otherSendAndReceive
+
+    def snd(self, value):
+        self.sendingBuffer.append(value)
+        return True
+
+    def rcv(self, register):
+        otherSendingBuffer = self.otherSendAndReceive.sendingBuffer
+        if len(otherSendingBuffer) > 0:
+            value = otherSendingBuffer.popleft()
+            #registers[register] = value
+            self.isWaiting = False
+        else:
+            self.isWaiting = True
+
+        return self.isWaiting
+
+    def shouldEarlyTerminate(self):
+
 
 class Duet:
     def __init__(self, instructions, sndAndRcvStrategy):
