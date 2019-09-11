@@ -11,6 +11,9 @@ class SoundAndRecover():
             if self.recoveredFrequency == None:
                 self.recoveredFrequency = self.lastPlayedFrequency
 
+    def shouldEarlyTerminate(self):
+        return self.recoveredFrequency != None
+
 class Duet:
     def __init__(self, instructions, sndAndRcvStrategy):
         self.registers = {}
@@ -99,6 +102,9 @@ class Duet:
 
             if shouldIncrement:
                 self.index += 1
+
+            if self.sndAndRcvStrategy.shouldEarlyTerminate():
+                break
 
     def getRecoveredFrequency(self):
         return self.sndAndRcvStrategy.recoveredFrequency
