@@ -104,7 +104,7 @@ class Duet:
         return self.sndAndRcvStrategy.recoveredFrequency
 
 with open("input.txt", "r") as instructionsFile:
-    instructions = instructionsFile.readlines()
+    instructions = instructionsFile.read().splitlines()
 
 duet = Duet(instructions, SoundAndRecover())
 
