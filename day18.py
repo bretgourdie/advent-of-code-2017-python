@@ -71,7 +71,7 @@ class Duet:
     def mod(self, register, valueOrRegister):
         self.__initRegister(register)
         value = self.__getValue(valueOrRegister)
-        self.registers[register] = registers[register] % value
+        self.registers[register] %= value
 
     def rcv(self, valueOrRegister):
         value = self.__getValue(valueOrRegister)
