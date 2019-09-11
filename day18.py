@@ -5,11 +5,13 @@ class SoundAndRecover():
 
     def snd(self, frequency):
         self.lastPlayedFrequency = frequency
+        return True
 
     def rcv(self, nonZeroCheck):
         if nonZeroCheck != 0:
             if self.recoveredFrequency == None:
                 self.recoveredFrequency = self.lastPlayedFrequency
+        return True
 
     def shouldEarlyTerminate(self):
         return self.recoveredFrequency != None
@@ -50,8 +52,7 @@ class Duet:
 
     def snd(self, valueOrRegister):
         value = self.__getValue(valueOrRegister)
-        self.sndAndRcvStrategy.snd(value)
-        return True
+        return self.sndAndRcvStrategy.snd(value)
 
     def set(self, register, valueOrRegister):
         self.__initRegister(register)
@@ -79,8 +80,7 @@ class Duet:
 
     def rcv(self, valueOrRegister):
         value = self.__getValue(valueOrRegister)
-        self.sndAndRcvStrategy.rcv(value)
-        return True
+        return self.sndAndRcvStrategy.rcv(value)
 
     def jgz(self, valueOrRegister, offsetValueOrRegister):
         value = self.__getValue(valueOrRegister)
