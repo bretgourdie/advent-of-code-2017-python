@@ -17,7 +17,6 @@ class Duet:
         self.sndAndRcvStrategy = sndAndRcvStrategy
         self.instructions = instructions
         self.index = 0
-        self.shouldIncrement = True
 
         self.instructionToFunction = {
             "snd": self.snd,
@@ -28,9 +27,6 @@ class Duet:
             "rcv": self.rcv,
             "jgz": self.jgz
         }
-
-    def __handleShouldIncrement(self, cameFromJgz):
-        self.shouldIncrement = not cameFromJgz
 
     def __initRegister(self, register):
         if not register.isalpha():
@@ -52,36 +48,45 @@ class Duet:
     def snd(self, valueOrRegister):
         value = self.__getValue(valueOrRegister)
         self.sndAndRcvStrategy.snd(value)
+        return True
 
     def set(self, register, valueOrRegister):
         self.__initRegister(register)
         value = self.__getValue(valueOrRegister)
         self.registers[register] = value
+        return True
 
     def add(self, register, valueOrRegister):
         self.__initRegister(register)
         value = self.__getValue(valueOrRegister)
         self.registers[register] += value
+        return True
 
     def mul(self, register, valueOrRegister):
         self.__initRegister(register)
         value = self.__getValue(valueOrRegister)
         self.registers[register] *= value
+        return True
 
     def mod(self, register, valueOrRegister):
         self.__initRegister(register)
         value = self.__getValue(valueOrRegister)
         self.registers[register] %= value
+        return True
 
     def rcv(self, valueOrRegister):
         value = self.__getValue(valueOrRegister)
         self.sndAndRcvStrategy.rcv(value)
+        return True
 
     def jgz(self, valueOrRegister, offsetValueOrRegister):
         value = self.__getValue(valueOrRegister)
-        offset = self.__getValue(valueOrRegister)
+        offset = self.__getValue(offsetValueOrRegister)
         if value > 0:
             self.index += offset
+            return False
+        else:
+            return True
 
     def process(self):
         while self.index >= 0 and self.index < len(self.instructions):
@@ -90,9 +95,9 @@ class Duet:
             instruction = splitInstruction[0]
 
             function = self.instructionToFunction[instruction]
-            function(*splitInstruction[1:])
+            shouldIncrement = function(*splitInstruction[1:])
 
-            if self.__handleShouldIncrement:
+            if shouldIncrement:
                 self.index += 1
 
     def getRecoveredFrequency(self):
