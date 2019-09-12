@@ -9,7 +9,7 @@ class SoundAndRecover():
         self.lastPlayedFrequency = frequency
         return True
 
-    def rcv(self, nonZeroCheck):
+    def rcv(self, valueOrRegister, nonZeroCheck):
         if nonZeroCheck != 0:
             if self.recoveredFrequency == None:
                 self.recoveredFrequency = self.lastPlayedFrequency
@@ -25,23 +25,26 @@ class SendAndReceive():
         self.otherSendAndReceive = None
         self.isWaiting = False
         self.programId = programId
+        self.numberOfSends = 0
 
         SendAndReceive.bufferByProgram[programId] = deque()
 
     def snd(self, value):
-        SendAndReceive.bufferByProgram[programId].append(value)
+        SendAndReceive.bufferByProgram[self.programId].append(value)
+        self.numberOfSends += 1
         return True
 
-    def rcv(self, register):
-        otherSendingBuffer = SendAndReceive.bufferByProgram[(programId + 1) % 2]
+    def rcv(self, valueOrRegister, value):
+        otherSendingBufferIndex = (self.programId + 1) % len(SendAndReceive.bufferByProgram)
+        otherSendingBuffer = SendAndReceive.bufferByProgram[otherSendingBufferIndex]
         if len(otherSendingBuffer) > 0:
             value = otherSendingBuffer.popleft()
-            Duet.registersByProgram[self.programId] = value
+            Duet.registersByProgram[self.programId][valueOrRegister] = value
             self.isWaiting = False
         else:
             self.isWaiting = True
 
-        return self.isWaiting
+        return not self.isWaiting
 
     def shouldEarlyTerminate(self):
         return self.isWaiting
@@ -57,9 +60,10 @@ class Duet:
         self.receiveBuffer = None
         self.programId = programId
 
+        Duet.registersByProgram[programId] = self.registers
+
         if programId is not None:
             self.registers["p"] = programId
-            Duet.registersByProgram[programId] = self.registers
 
         self.instructionToFunction = {
             "snd": self.snd,
@@ -121,7 +125,7 @@ class Duet:
 
     def rcv(self, valueOrRegister):
         value = self.__getValue(valueOrRegister)
-        return self.sndAndRcvStrategy.rcv(value)
+        return self.sndAndRcvStrategy.rcv(valueOrRegister, value)
 
     def jgz(self, valueOrRegister, offsetValueOrRegister):
         value = self.__getValue(valueOrRegister)
@@ -133,7 +137,7 @@ class Duet:
             return True
 
     def shouldContinueProcessing(self):
-        return self.index >= 0 and self.index < len(self.instructions)
+        return self.index >= 0 and self.index < len(self.instructions) and not self.sndAndRcvStrategy.shouldEarlyTerminate()
 
     def process(self):
         instructionLine = self.instructions[self.index]
@@ -154,12 +158,20 @@ with open("input.txt", "r") as instructionsFile:
 
 duet = Duet(instructions, SoundAndRecover())
 
-while not duet.sndAndRcvStrategy.shouldEarlyTerminate() and duet.shouldContinueProcessing():
+while duet.shouldContinueProcessing():
     duet.process()
 
 print("The last recovered frequency is {}".format(duet.getRecoveredFrequency()))
 
 duets = [
-    Duet(instructions, SoundAndRecover(), 0),
-    Duet(instructions, SoundAndRecover(), 1)
+    Duet(instructions, SendAndReceive(0), 0),
+    Duet(instructions, SendAndReceive(1), 1)
 ]
+
+while any(duet.shouldContinueProcessing() for duet in duets):
+    for duet in duets:
+        duet.process()
+
+targetProgramId = 1
+numberOfSends = duets[targetProgramId].sndAndRcvStrategy.numberOfSends
+print("The number of sends program {} sent was {}".format(targetProgramId, numberOfSends))
