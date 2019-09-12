@@ -19,23 +19,24 @@ class SoundAndRecover():
         return self.recoveredFrequency != None
 
 class SendAndReceive():
-    def __init__(self):
-        self.sendingBuffer = deque()
+    bufferByProgram = {}
+
+    def __init__(self, programId):
         self.otherSendAndReceive = None
         self.isWaiting = False
+        self.programId = programId
 
-    def SetOtherSendAndReceive(otherSendAndReceive):
-        self.otherSendAndReceive = otherSendAndReceive
+        SendAndReceive.bufferByProgram[programId] = deque()
 
     def snd(self, value):
-        self.sendingBuffer.append(value)
+        SendAndReceive.bufferByProgram[programId].append(value)
         return True
 
     def rcv(self, register):
-        otherSendingBuffer = self.otherSendAndReceive.sendingBuffer
+        otherSendingBuffer = SendAndReceive.bufferByProgram[(programId + 1) % 2]
         if len(otherSendingBuffer) > 0:
             value = otherSendingBuffer.popleft()
-            #registers[register] = value
+            Duet.registersByProgram[self.programId] = value
             self.isWaiting = False
         else:
             self.isWaiting = True
@@ -43,14 +44,22 @@ class SendAndReceive():
         return self.isWaiting
 
     def shouldEarlyTerminate(self):
-        pass
+        return self.isWaiting
 
 class Duet:
-    def __init__(self, instructions, sndAndRcvStrategy):
+    registersByProgram = {}
+
+    def __init__(self, instructions, sndAndRcvStrategy, programId = None):
         self.registers = {}
         self.sndAndRcvStrategy = sndAndRcvStrategy
         self.instructions = instructions
         self.index = 0
+        self.receiveBuffer = None
+        self.programId = programId
+
+        if programId is not None:
+            self.registers["p"] = programId
+            Duet.registersByProgram[programId] = self.registers
 
         self.instructionToFunction = {
             "snd": self.snd,
@@ -61,6 +70,9 @@ class Duet:
             "rcv": self.rcv,
             "jgz": self.jgz
         }
+
+    def setReceiveBuffer(self, duet):
+        self.receiveBuffer = duet.sndAndRcvStrategy.sendingBuffer
 
     def __initRegister(self, register):
         if not register.isalpha():
@@ -120,20 +132,19 @@ class Duet:
         else:
             return True
 
+    def shouldContinueProcessing(self):
+        return self.index >= 0 and self.index < len(self.instructions)
+
     def process(self):
-        while self.index >= 0 and self.index < len(self.instructions):
-            instructionLine = self.instructions[self.index]
-            splitInstruction = instructionLine.split()
-            instruction = splitInstruction[0]
+        instructionLine = self.instructions[self.index]
+        splitInstruction = instructionLine.split()
+        instruction = splitInstruction[0]
 
-            function = self.instructionToFunction[instruction]
-            shouldIncrement = function(*splitInstruction[1:])
+        function = self.instructionToFunction[instruction]
+        shouldIncrement = function(*splitInstruction[1:])
 
-            if shouldIncrement:
-                self.index += 1
-
-            if self.sndAndRcvStrategy.shouldEarlyTerminate():
-                break
+        if shouldIncrement:
+            self.index += 1
 
     def getRecoveredFrequency(self):
         return self.sndAndRcvStrategy.recoveredFrequency
@@ -143,6 +154,12 @@ with open("input.txt", "r") as instructionsFile:
 
 duet = Duet(instructions, SoundAndRecover())
 
-duet.process()
+while not duet.sndAndRcvStrategy.shouldEarlyTerminate() and duet.shouldContinueProcessing():
+    duet.process()
 
 print("The last recovered frequency is {}".format(duet.getRecoveredFrequency()))
+
+duets = [
+    Duet(instructions, SoundAndRecover(), 0),
+    Duet(instructions, SoundAndRecover(), 1)
+]
