@@ -1,4 +1,4 @@
-from collections import dequeue
+from collections import deque
 
 class SoundAndRecover():
     def __init__(self):
@@ -20,7 +20,7 @@ class SoundAndRecover():
 
 class SendAndReceive():
     def __init__(self):
-        self.sendingBuffer = dequeue()
+        self.sendingBuffer = deque()
         self.otherSendAndReceive = None
         self.isWaiting = False
 
@@ -43,7 +43,7 @@ class SendAndReceive():
         return self.isWaiting
 
     def shouldEarlyTerminate(self):
-
+        pass
 
 class Duet:
     def __init__(self, instructions, sndAndRcvStrategy):
