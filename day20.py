@@ -1,46 +1,3 @@
-class DeleteCollisions():
-    def __init__(self):
-        self.removeCollisions = True
-
-class IgnoreCollisions():
-    def __init__(self):
-        self.removeCollisions = False
-
-class Simulation():
-    def run(self, input, collisionStrategy):
-        particles = []
-        for i, line in enumerate(lines):
-            particles.append(Particle(i, line))
-
-        currentWinner = CurrentWinner()
-
-        while currentWinner.rounds < 300:
-            for particle in particles:
-                particle.update()
-
-            if collisionStrategy.removeCollisions:
-                positionToParticle = {}
-
-                for particle in particles:
-                    if particle.p not in positionToParticle:
-                        positionToParticle[particle.p] = []
-                    positionToParticle[particle.p].append(particle)
-
-                for position in positionToParticle:
-                    pParticles = positionToParticle[position]
-                    if len(pParticles) > 1:
-                        for particle in pParticles:
-                            particle.markedForDeletion = True
-
-                particles = [p for p in particles if not p.markedForDeletion]
-
-            winner = min(particles, key=lambda p: p.getDistance())
-            currentWinner.set(winner)
-
-
-        withOrWithout = "with" + "out" if not collisionStrategy.removeCollisions else ""
-        print("Particle that will stay closest to 0,0,0 {} collisions is {}".format(withOrWithout, currentWinner.particle.number))
-
 class Point3D():
     def __init__(self, x: str, y: str, z: str):
         self.x = int(x)
@@ -92,6 +49,53 @@ class CurrentWinner():
         else:
             self.particle = particle
             self.rounds = 0
+
+class DeleteCollisions():
+    def __init__(self):
+        self.removeCollisions = True
+
+    def getAnswer(self, currentWinner: CurrentWinner, particles: list):
+        print("Number of particles left after collisions is {}".format(len(particles)))
+
+class IgnoreCollisions():
+    def __init__(self):
+        self.removeCollisions = False
+
+    def getAnswer(self, currentWinner: CurrentWinner, particles: list):
+        print("Particle that will stay closest to 0,0,0 is {}".format(currentWinner.particle.number))
+
+class Simulation():
+    def run(self, input, collisionStrategy):
+        particles = []
+        for i, line in enumerate(lines):
+            particles.append(Particle(i, line))
+
+        currentWinner = CurrentWinner()
+
+        while currentWinner.rounds < 300:
+            for particle in particles:
+                particle.update()
+
+            if collisionStrategy.removeCollisions:
+                positionToParticle = {}
+
+                for particle in particles:
+                    if particle.p not in positionToParticle:
+                        positionToParticle[particle.p] = []
+                    positionToParticle[particle.p].append(particle)
+
+                for position in positionToParticle:
+                    pParticles = positionToParticle[position]
+                    if len(pParticles) > 1:
+                        for particle in pParticles:
+                            particle.markedForDeletion = True
+
+                particles = [p for p in particles if not p.markedForDeletion]
+
+            winner = min(particles, key=lambda p: p.getDistance())
+            currentWinner.set(winner)
+
+        collisionStrategy.getAnswer(currentWinner, particles)
 
 with open("input.txt", "r") as f:
     lines = f.readlines()
