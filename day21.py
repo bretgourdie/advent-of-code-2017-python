@@ -3,12 +3,17 @@ class Shape():
         transforms = [form]
 
         for i in range(3):
-            # fix rotations
-            pass
+            previousTransform = transforms[i]
 
-        flippedList = [l[::-1] for l in form]
+            newRotationTuples = zip(*previousTransform[::-1])
+            newRotation = ["".join(list(elem)) for elem in newRotationTuples]
+            transforms.append(newRotation)
 
-        transforms.append(flippedList)
+        currentLength = len(transforms)
+        for i in range(currentLength):
+            flippedList = [l[::-1] for l in transforms[i]]
+
+            transforms.append(flippedList)
 
         return transforms
 
@@ -19,4 +24,3 @@ class Shape():
 
 startingShape = Shape(".#./..#/###")
 
-print(startingShape.form)
